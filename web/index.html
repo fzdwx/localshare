@@ -8,11 +8,156 @@
     <link href="/output.css" rel="stylesheet">
     <title>Local Share</title>
 </head>
-<body>
+<body class="bg-gray-100 h-screen flex flex-col">
+<div class="flex-1 p-4 flex flex-col max-w-3xl mx-auto w-full">
+    <h1 class="text-2xl font-bold text-center mb-6 text-indigo-600">Stylish Chat</h1>
+    <div id="chat-container" class="flex-1 overflow-y-auto bg-white rounded-lg shadow-md p-4 space-y-4"></div>
+    <div class="mt-4">
+        <div class="flex items-center space-x-2">
+            <input id="message-input" type="text"
+                   class="flex-1 rounded-l-full p-3 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                   placeholder="Type your message...">
+            <label for="file-input"
+                   class="cursor-pointer bg-indigo-100 hover:bg-indigo-200 text-indigo-600 rounded-full p-3 transition duration-300">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24"
+                     stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"/>
+                </svg>
+            </label>
+            <input id="file-input" type="file" class="hidden">
+            <button id="send-button"
+                    class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-6 rounded-r-full transition duration-300">
+                Send
+            </button>
+        </div>
+    </div>
+</div>
 
+<script>
+    const chatContainer = document.getElementById('chat-container');
+    const messageInput = document.getElementById('message-input');
+    const fileInput = document.getElementById('file-input');
+    const sendButton = document.getElementById('send-button');
+    let ws;
 
-<h1 class="text-3xl font-bold underline">
-    Hello world!
-</h1>
+    function connectWebSocket() {
+        ws = new WebSocket('/ws'); // 替换为您的WebSocket服务器地址
+
+        ws.onopen = () => console.log('WebSocket连接已打开');
+        ws.onclose = () => {
+            console.log('WebSocket连接已关闭');
+            setTimeout(connectWebSocket, 3000); // 3秒后尝试重新连接
+        };
+
+        ws.onmessage = (event) => {
+            if (event.data instanceof Blob) {
+                handleBinaryMessage(event.data);
+            } else {
+                const message = JSON.parse(event.data);
+                appendMessage(message);
+            }
+        };
+    }
+
+    connectWebSocket();
+
+    function handleBinaryMessage(blob) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            const message = {
+                type: 'file',
+                fileName: blob.name || 'unknown',
+                fileType: blob.type,
+                fileContent: e.target.result,
+                sender: 'other'
+            };
+            appendMessage(message);
+        };
+        reader.readAsDataURL(blob);
+    }
+
+    function appendMessage(message) {
+        const messageElement = document.createElement('div');
+        messageElement.classList.add('flex', message.sender === 'user' ? 'justify-end' : 'justify-start');
+
+        const contentElement = document.createElement('div');
+        contentElement.classList.add('max-w-xs', 'lg:max-w-md', 'rounded-lg', 'p-3', 'shadow');
+
+        // 分别添加类名
+        if (message.sender === 'user') {
+            contentElement.classList.add('bg-indigo-500', 'text-white');
+        } else {
+            contentElement.classList.add('bg-gray-100', 'text-gray-800');
+        }
+
+        if (message.type === 'text') {
+            contentElement.textContent = message.text;
+        } else if (message.type === 'file') {
+            if (message.fileType.startsWith('image/')) {
+                const img = document.createElement('img');
+                img.src = message.fileContent;
+                img.classList.add('max-w-full', 'h-auto', 'rounded');
+                contentElement.appendChild(img);
+            } else {
+                const link = document.createElement('a');
+                link.href = message.fileContent;
+                link.download = message.fileName;
+                link.textContent = `Download ${message.fileName}`;
+                link.classList.add('text-blue-600', 'underline');
+                contentElement.appendChild(link);
+            }
+        }
+
+        messageElement.appendChild(contentElement);
+        chatContainer.appendChild(messageElement);
+        chatContainer.scrollTop = chatContainer.scrollHeight;
+    }
+
+    function sendMessage() {
+        const messageText = messageInput.value.trim();
+        const file = fileInput.files[0];
+
+        if ((!messageText && !file) || !ws || ws.readyState !== WebSocket.OPEN) return;
+
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const fileContent = e.target.result;
+                const message = {
+                    type: 'file',
+                    fileName: file.name,
+                    fileType: file.type,
+                    fileContent: fileContent,
+                    sender: 'user'
+                };
+                ws.send(JSON.stringify(message));
+                appendMessage(message);
+                fileInput.value = '';
+            };
+            reader.readAsDataURL(file);
+        }
+
+        if (messageText) {
+            const message = {type: 'text', text: messageText, sender: 'user'};
+            ws.send(JSON.stringify(message));
+            appendMessage(message);
+            messageInput.value = '';
+        }
+    }
+
+    sendButton.addEventListener('click', sendMessage);
+    messageInput.addEventListener('keypress', (event) => {
+        if (event.key === 'Enter') {
+            sendMessage();
+        }
+    });
+
+    fileInput.addEventListener('change', () => {
+        if (fileInput.files.length > 0) {
+            sendMessage();
+        }
+    });
+</script>
 </body>
 </html>
