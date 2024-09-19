@@ -144,9 +144,14 @@
         chatContainer.scrollTop = chatContainer.scrollHeight;
     }
 
+    let pasteFile = null;
+
     function sendMessage() {
         const messageText = messageInput.value.trim();
-        const file = fileInput.files[0];
+        let file = pasteFile
+        if (file === null) {
+            file = fileInput.files[0];
+        }
 
         if ((!messageText && !file) || !ws || ws.readyState !== WebSocket.OPEN) return;
 
@@ -180,6 +185,24 @@
     messageInput.addEventListener('keypress', (event) => {
         if (event.key === 'Enter') {
             sendMessage();
+        }
+    });
+
+    messageInput.addEventListener('paste', (event) => {
+        let file = null;
+        const items = (event.clipboardData || window.clipboardData).items;
+        if (items && items.length) {
+            for (var i = 0; i < items.length; i++) {
+                if (items[i].type.includes('image')) {
+                    file = items[i].getAsFile();
+                    break;
+                }
+            }
+        }
+        if (file) {
+            pasteFile = file;
+            sendMessage()
+            pasteFile = null;
         }
     });
 
