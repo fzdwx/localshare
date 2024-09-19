@@ -39,6 +39,7 @@
     const messageInput = document.getElementById('message-input');
     const fileInput = document.getElementById('file-input');
     const sendButton = document.getElementById('send-button');
+    const body = document.body;
     let ws;
     let userId;
 
@@ -141,7 +142,7 @@
 
         messageElement.appendChild(contentElement);
         chatContainer.appendChild(messageElement);
-        chatContainer.scrollTop = chatContainer.scrollHeight;
+        window.scrollTo(0,body.scrollHeight)
     }
 
     let pasteFile = null;
