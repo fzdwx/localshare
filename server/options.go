@@ -4,24 +4,13 @@ type Option interface {
 	apply(*Server)
 }
 
-type optionFunc func(*Server)
+type WithDev bool
 
-func (f optionFunc) apply(s *Server) {
-	f(s)
+type WithPort int
+
+func (w WithDev) apply(server *Server) {
+	server.dev = bool(w)
 }
-
-func newOption(f func(*Server)) Option {
-	return optionFunc(f)
-}
-
-func WithDev(dev bool) Option {
-	return newOption(func(s *Server) {
-		s.dev = dev
-	})
-}
-
-func WithPort(port int) Option {
-	return newOption(func(s *Server) {
-		s.port = port
-	})
+func (w WithPort) apply(server *Server) {
+	server.port = int(w)
 }
