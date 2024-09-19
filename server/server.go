@@ -5,11 +5,13 @@ import (
 	"github.com/lxzan/gws"
 	"localshare/web"
 	"net/http"
-	"time"
+	"sync"
 )
 
 type Server struct {
-	mux *http.ServeMux
+	mux      *http.ServeMux
+	users    map[string]*gws.Conn
+	usersMux sync.RWMutex
 
 	// dev mode
 	// web assets will be reloaded every time the page is refreshed
@@ -20,9 +22,11 @@ type Server struct {
 
 func Serve(opts ...Option) error {
 	s := &Server{
-		mux:  http.NewServeMux(),
-		port: 9408,
-		dev:  false,
+		mux:      http.NewServeMux(),
+		users:    make(map[string]*gws.Conn),
+		usersMux: sync.RWMutex{},
+		port:     9408,
+		dev:      false,
 	}
 
 	for _, opt := range opts {
@@ -36,29 +40,6 @@ func Serve(opts ...Option) error {
 func (s *Server) serve() error {
 	fmt.Printf("Server started at http://localhost:%d \n", s.port)
 	return http.ListenAndServe(fmt.Sprintf(":%d", s.port), s.mux)
-}
-
-const (
-	PingInterval = 5 * time.Second
-	PingWait     = 10 * time.Second
-)
-
-func (s *Server) OnOpen(socket *gws.Conn) {
-	_ = socket.SetDeadline(time.Now().Add(PingInterval + PingWait))
-}
-
-func (s *Server) OnClose(socket *gws.Conn, err error) {}
-
-func (s *Server) OnPing(socket *gws.Conn, payload []byte) {
-	_ = socket.SetDeadline(time.Now().Add(PingInterval + PingWait))
-	_ = socket.WritePong(nil)
-}
-
-func (s *Server) OnPong(socket *gws.Conn, payload []byte) {}
-
-func (s *Server) OnMessage(socket *gws.Conn, message *gws.Message) {
-	defer message.Close()
-	socket.WriteMessage(message.Opcode, message.Bytes())
 }
 
 func (s *Server) mount() {
@@ -83,5 +64,29 @@ func (s *Server) mount() {
 		fmt.Printf("Dev mode enabled\n")
 	} else {
 		s.mux.Handle("/", http.FileServerFS(web.Dist))
+	}
+}
+
+func (s *Server) AddUser(userID string, socket *gws.Conn) {
+	s.usersMux.Lock()
+	defer s.usersMux.Unlock()
+	s.users[userID] = socket
+}
+
+func (s *Server) RemoveUser(userID string) {
+	s.usersMux.Lock()
+	defer s.usersMux.Unlock()
+	delete(s.users, userID)
+}
+
+func (s *Server) Broadcast(excludeMsgUser bool, msg *Message) {
+	s.usersMux.RLock()
+	defer s.usersMux.RUnlock()
+
+	for userID, conn := range s.users {
+		if excludeMsgUser && userID == msg.UserID {
+			continue
+		}
+		conn.WriteMessage(gws.OpcodeText, msg.raw)
 	}
 }
