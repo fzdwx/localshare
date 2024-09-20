@@ -63,7 +63,7 @@ function appendMessage(message) {
     if (message.sender === userId) {
         contentElement.classList.add('bg-just', 'text-white');
     } else {
-        contentElement.classList.add('bg-just-lighter', 'text-just-darker');
+        contentElement.classList.add('bg-gray-100', 'text-gray-800');
     }
 
     if (message.type === 'identify') {
