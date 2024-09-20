@@ -2,8 +2,8 @@ package server
 
 import (
 	"fmt"
+	"github.com/fzdwx/localshare/web"
 	"github.com/lxzan/gws"
-	"localshare/web"
 	"net/http"
 	"sync"
 )

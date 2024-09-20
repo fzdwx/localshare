@@ -1,8 +1,8 @@
 package main
 
 import (
+	"github.com/fzdwx/localshare/server"
 	"github.com/spf13/cobra"
-	"localshare/server"
 	"os"
 )
 

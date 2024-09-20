@@ -1,4 +1,4 @@
-module github.com/fzdwx/localshare@main
+module github.com/fzdwx/localshare
 
 go 1.23.0
 
