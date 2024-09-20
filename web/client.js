@@ -61,14 +61,14 @@ function appendMessage(message) {
     contentElement.classList.add('max-w-xs', 'lg:max-w-md', 'rounded-lg', 'p-3', 'shadow');
 
     if (message.sender === userId) {
-        contentElement.classList.add('bg-indigo-500', 'text-white');
+        contentElement.classList.add('bg-just', 'text-white');
     } else {
-        contentElement.classList.add('bg-gray-100', 'text-gray-800');
+        contentElement.classList.add('bg-just-lighter', 'text-just-darker');
     }
 
     if (message.type === 'identify') {
         contentElement.textContent = `User ${message.sender} joined the chat`;
-        contentElement.classList = ['text-center', 'text-gray-500', 'text-sm'];
+        contentElement.classList = ['text-center', 'text-just-dark', 'text-sm'];
     } else if (message.type === 'text') {
         const urlRegex = /(https?:\/\/[^\s]+)/g;
         const parts = message.text.split(urlRegex);
@@ -77,7 +77,7 @@ function appendMessage(message) {
                 const link = document.createElement('a');
                 link.href = part;
                 link.textContent = part;
-                link.classList.add('text-blue-600', 'underline');
+                link.classList.add('text-aura-just', 'underline');
                 link.target = '_blank';
                 contentElement.appendChild(link);
             } else {
@@ -96,7 +96,7 @@ function appendMessage(message) {
             link.href = message.fileContent;
             link.download = message.fileName;
             link.textContent = `Download ${message.fileName}`;
-            link.classList.add('text-blue-600', 'underline');
+            link.classList.add('text-aura-just', 'underline');
             contentElement.appendChild(link);
         }
     }
@@ -139,6 +139,8 @@ function sendMessage() {
         appendMessage(message);
         messageInput.value = '';
     }
+
+    window.scrollTo(0, body.scrollHeight)
 }
 
 sendButton.addEventListener('click', sendMessage);
@@ -169,5 +171,6 @@ messageInput.addEventListener('paste', (event) => {
 fileInput.addEventListener('change', () => {
     if (fileInput.files.length > 0) {
         sendMessage();
+        window.scrollTo(0, body.scrollHeight)
     }
 });

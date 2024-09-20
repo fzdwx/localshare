@@ -6,10 +6,10 @@ module.exports = {
     theme: {
         extend: {
             colors: {
-                'aura-just': "#61ffca",
-                'just': "#10b981",
-                'just-light': "#34d399",
-                'just-lighter': "#6ee7b7",
+                'aura-just': "rgb(97,255,202)",
+                'just': "rgb(16,185,129)",
+                'just-light': "rgb(52,211,153)",
+                'just-lighter': "rgb(110,231,183)",
                 'just-dark': "#059669",
                 'just-darker': "rgb(4, 120, 87)",
             },
