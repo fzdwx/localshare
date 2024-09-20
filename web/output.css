@@ -575,10 +575,6 @@ video {
   display: none;
 }
 
-.h-32 {
-  height: 8rem;
-}
-
 .h-6 {
   height: 1.5rem;
 }
@@ -649,10 +645,6 @@ video {
 
 .overflow-y-auto {
   overflow-y: auto;
-}
-
-.overflow-y-scroll {
-  overflow-y: scroll;
 }
 
 .rounded {
