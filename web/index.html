@@ -14,9 +14,13 @@
     <div id="chat-container" class="flex-1 overflow-y-auto bg-white rounded-lg shadow-md p-4 space-y-4"></div>
     <div class="mt-4">
         <div class="flex items-center space-x-2">
-            <input id="message-input" type="text"
-                   class="flex-1 rounded-l-full p-3 border border-just-light focus:outline-none focus:ring-2 focus:ring-just"
-                   placeholder="Type your message...">
+            <textarea id="message-input"
+                      class="flex-1 rounded-full p-3 border border-just-light focus:outline-none focus:ring-2 focus:ring-just resize-none overflow-hidden h-10 leading-5"
+                      placeholder="Type your message..."
+                      style="resize: none;"
+                      rows="1">
+            </textarea>
+
             <label for="file-input"
                    class="cursor-pointer bg-just-lighter hover:bg-just-light text-just-darker rounded-full p-3 transition duration-300">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24"

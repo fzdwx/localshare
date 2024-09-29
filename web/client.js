@@ -108,6 +108,7 @@ function appendMessage(message) {
 
 function sendMessage() {
     const messageText = messageInput.value.trim();
+    console.log(messageText)
     let file = pasteFile
     if (file === null) {
         file = fileInput.files[0];
